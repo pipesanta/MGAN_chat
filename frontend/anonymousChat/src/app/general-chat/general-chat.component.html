@@ -1,1 +1,13 @@
-<button mat-button>My Button</button>
+<div #msgList class="text-panel">
+    <div class="msg" *ngFor="let msg of messages">
+        <span> {{ msg }} </span>
+    </div>
+</div>
+<div style="display: flex; flex-direction: row;">
+    <input #input class="input-text" type="text" (keyup)="onKeyenter($event)" >
+    <div class="btn-send">
+        <button (click)="sendMsg()" mat-icon-button>
+            <mat-icon>send</mat-icon>
+        </button>
+    </div>
+</div>

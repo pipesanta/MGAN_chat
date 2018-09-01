@@ -8,8 +8,6 @@ import { AppComponent } from './app.component';
 import { MaterialModule } from './material.module';
 import { GeneralChatComponent } from './general-chat/general-chat.component';
 
-// import { FlexLayoutModule } from '@angular/flex-layout';
-
 
 @NgModule({
   declarations: [
@@ -20,8 +18,7 @@ import { GeneralChatComponent } from './general-chat/general-chat.component';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MaterialModule,
-    // FlexLayoutModule
+    MaterialModule
   ],
   providers: [],
   bootstrap: [AppComponent]
