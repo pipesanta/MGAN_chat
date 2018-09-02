@@ -14,7 +14,6 @@ class UserEventConsumer {
     constructor() { }
 
     handleAnonymousMessageArrived$(evt){
-        console.log("handleAnonymousMessageArrived", evt.data.msg);
         return anonymousChatDA.saveMessageSent$(evt.data.msg, evt.timestamp)
         .mergeMap(() => broker.send$(MATERIALIZED_VIEW_TOPIC, 'onNewMsgArrived', evt.data.msg))
     }

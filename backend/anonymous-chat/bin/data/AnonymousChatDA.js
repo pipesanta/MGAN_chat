@@ -24,11 +24,13 @@ class AnonymousChatDA {
 
   static searchAllMessages$() {
     const collection = mongoDB.db.collection(CollectionName);
-    // return Rx.Observable.defer( () => collection.find() );
-    return Rx.Observable.of(['hola', 'mundo'])
+    return Rx.Observable.defer( () => collection.find()
+      .sort({'timestamp': 1}).toArray() );
+    // return Rx.Observable.of(['hola', 'mundo'])
   }
 
   static saveMessageSent$(msg, timestamp){
+    console.log('GUARDANDO EL MENSAJE ==> ', msg);
     const collection = mongoDB.db.collection(CollectionName);
     return Rx.Observable.defer(() => collection.insert({
       body: msg,

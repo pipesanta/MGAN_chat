@@ -40,17 +40,20 @@ class AnonymousChat {
   // }
   
   getMessages$({ args, jwt }, authToken){
-    console.log("=====>", args, jwt, authToken);
     return anonymousChatDA.searchAllMessages$()
-    .do(r => console.log("respuesta de mongo =>> ", r))
-
+    .mergeMap(mongoArrayResul => {
+      return Rx.Observable.from(mongoArrayResul)
+      .map(doc => doc.body)
+    })
+    .toArray()
+    .do(r => console.log(r))
     .mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse))
     .catch(err => this.errorHandler$(err));
   }
 
 
   sendMessage$({ args, jwt }, authToken) {    
-    console.log("sendMessage", args);
+    console.log("sendMessage ====>", args);
     return eventSourcing.eventStore.emitEvent$(
       new Event({
         eventType: "anonymousMessageArrived",
