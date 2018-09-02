@@ -1,0 +1,11 @@
+
+
+type Query {
+  # "return Tags Array using paginator methods"
+  getMessages(limit: Int): [String]
+}
+
+type Mutation{
+  "Send Message"
+  sendMessage(msg: String): String
+}
