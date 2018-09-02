@@ -4,15 +4,6 @@ const Rx = require("rxjs");
 const eventSourcing = require("../tools/EventSourcing")();
 const Event = require("@nebulae/event-store").Event;
 const anonymousChatDA = require("../data/AnonymousChatDA");
-const broker = require("../tools/broker/BrokerFactory")();
-const {
-  PERMISSION_DENIED_ERROR
-} = require("../tools/ErrorCodes");
-const MATERIALIZED_VIEW_TOPIC = "materialized-view-updates";
-const {
-  CustomError,
-  DefaultError
-} = require("../tools/customError");
 
 
 /**
@@ -22,38 +13,24 @@ let instance;
 
 class AnonymousChat {
   constructor() {
-    // this.initHelloWorldEventGenerator();
   }
 
-
-  // initHelloWorldEventGenerator(){
-  //   Rx.Observable.interval(1000)
-  //   .take(512)
-  //   .map(id => "Felipe Santa" + Math.floor(Math.random() *10) )    
-  //   .mergeMap(evt => {
-  //     return broker.send$(MATERIALIZED_VIEW_TOPIC, 'onNewMsgArrived', evt);
-  //   }).subscribe(
-  //     (evt) => {},
-  //     (err) => console.error('Gateway GraphQL sample event sent ERROR, please remove'),
-  //     () => console.log('Gateway GraphQL sample event sending STOPPED, please remove'),
-  //   );
-  // }
   
   getMessages$({ args, jwt }, authToken){
+    console.log('Query by all messages');
     return anonymousChatDA.searchAllMessages$()
     .mergeMap(mongoArrayResul => {
       return Rx.Observable.from(mongoArrayResul)
       .map(doc => doc.body)
     })
     .toArray()
-    .do(r => console.log(r))
     .mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse))
     .catch(err => this.errorHandler$(err));
   }
 
 
   sendMessage$({ args, jwt }, authToken) {    
-    console.log("sendMessage ====>", args);
+    console.log("Sending Message ====>", args);
     return eventSourcing.eventStore.emitEvent$(
       new Event({
         eventType: "anonymousMessageArrived",

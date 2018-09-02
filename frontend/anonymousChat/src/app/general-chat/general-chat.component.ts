@@ -45,11 +45,11 @@ export class GeneralChatComponent implements OnInit {
       )
       .subscribe(
         msg => {
-          this.messages.pop();
-          const msgContainer = this.msgList.nativeElement;
+          this.messages.pop();        
           this.messages.push(msg);
-          this.messages.push('----END-----');          
-          msgContainer.scrollTo(0, msgContainer.scrollHeight - 500);
+          this.messages.push('---END---');
+          const msgContainer = this.msgList.nativeElement;
+          msgContainer.scrollTo(0, msgContainer.scrollHeight - 470);
         },
         error => console.log(error),
         () => console.log("complete listenMessageArrive subscriptions")
@@ -75,7 +75,7 @@ export class GeneralChatComponent implements OnInit {
             console.log(response);
             this.messages.push(input);
             this.inputText.nativeElement.value = '';
-            msgContainer.scrollTo(0, msgContainer.scrollHeight - 500);
+            msgContainer.scrollTo(0, msgContainer.scrollHeight - 470);
           },
           error => console.log(error),
           () => console.log('send message stream finished')

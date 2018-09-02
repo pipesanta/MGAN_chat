@@ -12,7 +12,7 @@ let instance;
 
 class UserEventConsumer {
     constructor() { }
-
+    
     handleAnonymousMessageArrived$(evt){
         return anonymousChatDA.saveMessageSent$(evt.data.msg, evt.timestamp)
         .mergeMap(() => broker.send$(MATERIALIZED_VIEW_TOPIC, 'onNewMsgArrived', evt.data.msg))

@@ -4,7 +4,6 @@ let mongoDB = undefined;
 // const mongoDB = require('./MongoDB')();
 const Rx = require('rxjs');
 const CollectionName = "AnonymousChatMsg"; //please change
-const { CustomError } = require('../tools/customError');
 
 
 class AnonymousChatDA {
@@ -24,23 +23,18 @@ class AnonymousChatDA {
 
   static searchAllMessages$() {
     const collection = mongoDB.db.collection(CollectionName);
-    return Rx.Observable.defer( () => collection.find()
-      .sort({'timestamp': 1}).toArray() );
-    // return Rx.Observable.of(['hola', 'mundo'])
+    return Rx.Observable.defer(() => collection.find()
+      .sort({ 'timestamp': 1 }).toArray());
   }
 
-  static saveMessageSent$(msg, timestamp){
-    console.log('GUARDANDO EL MENSAJE ==> ', msg);
+  static saveMessageSent$(msg, timestamp) {
     const collection = mongoDB.db.collection(CollectionName);
     return Rx.Observable.defer(() => collection.insert({
       body: msg,
       timestamp: timestamp
     })
-  );
+    );
   }
-  
-  
-
 }
 
-module.exports =  AnonymousChatDA 
+module.exports = AnonymousChatDA 

@@ -20,7 +20,6 @@ const start = () => {
         graphQlService.start$()
     ).subscribe(
         (evt) => {
-            // console.log(evt)
         },
         (error) => {
             console.error('Failed to start', error);
