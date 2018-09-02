@@ -15,8 +15,10 @@ export class GatewayService {
     private httpLink: HttpLink,
   ) {
 
+    const host = "192.168.1.21"
+    
     // HTTP end-point
-    const http = httpLink.create({ uri: 'http://localhost:3000/api/gateway/graphql/http' });
+    const http = httpLink.create({ uri: `http://${host}:3000/api/gateway/graphql/http` });
 
 
 
@@ -28,7 +30,7 @@ export class GatewayService {
 
       // Create a WebSocket link:
       const ws = new WebSocketLink({
-        uri: "ws://localhost:3000/api/gateway/graphql/ws",
+        uri: `ws://${host}:3000/api/gateway/graphql/ws`,
         options: {
           reconnect: true,
           connectionParams: {

@@ -1,4 +1,6 @@
-const INTERNAL_SERVER_ERROR_CODE = 12001;
+//Every single error code
+// please use the prefix assigned to this micorservice
+const INTERNAL_SERVER_ERROR_CODE = 00001;
 
 /**
  * class to emcapsulute diferent errors.

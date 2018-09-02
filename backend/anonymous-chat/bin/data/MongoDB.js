@@ -2,7 +2,6 @@
 
 const Rx = require('rxjs');
 const MongoClient = require('mongodb').MongoClient;
-
 let instance = null;
 
 class MongoDB {
@@ -18,7 +17,7 @@ class MongoDB {
 
     /**
      * Starts DB connections
-     * Returns an Obserable that resolve to the DB client
+     * @returns {Rx.Observable} Obserable that resolve to the DB client
      */
     start$() {
         console.log("MongoDB.start$()... ");
@@ -26,20 +25,20 @@ class MongoDB {
             .map(client => {
                 console.log(this.url);
                 this.client = client;
-                this.db = this.client.db(this.dbName);                
+                this.db = this.client.db(this.dbName);
                 return `MongoDB connected to dbName= ${this.dbName}`;
             });
     }
 
-      /**
-     * Stops DB connections
-     * Returns an Obserable that resolve to a string log
-     */
+    /**
+   * Stops DB connections
+   * Returns an Obserable that resolve to a string log
+   */
     stop$() {
         return Rx.Observable.create((observer) => {
-        this.client.close();
-        observer.next('Mongo DB Client closed');
-        observer.complete();
+            this.client.close();
+            observer.next('Mongo DB Client closed');
+            observer.complete();
         });
     }
 
@@ -48,39 +47,29 @@ class MongoDB {
      * Returns an Obserable that resolve to a string log
      */
     createIndexes$() {
-        return Rx.Observable.create( async (observer) => {       
+        return Rx.Observable.create(async (observer) => {
+            //observer.next('Creating index for DB_NAME.COLLECTION_NAME => ({ xxxx: 1 })  ');
+            //await this.db.collection('COLLECTION_NAME').createIndex( { xxxx: 1});  
 
-        observer.next('Creating index for DashboardDevices.DeviceAlarmReports => ({ type: 1 })  ');
-        await this.db.collection('DeviceAlarmReports').createIndex( { timestamp: -1,  type: 1 });
-
-        observer.next('Creating index for DashboardDevices.deviceTransactions => ({ timestamp: -1, groupName: 1 })');
-        await  this.db.collection('deviceTransactions').createIndex( { timestamp: -1, groupName: 1 });
-
-        observer.next('Creating index for DashboardDevices.deviceTransactions =>  ({ timestamp: -1, success: 1 })');
-        await this.db.collection('deviceTransactions').createIndex( { timestamp: -1, success: 1 });
-
-        observer.next('Creating index for DashboardDevices.deviceState =>  ({ groupName: 1 })');
-        await this.db.collection('deviceState').createIndex( { groupName: 1 });
-
-        observer.next('Creating index for DashboardDevices.deviceState => ({ deviceId: 1 }, { unique : true })');
-        await this.db.collection('deviceState').createIndex( { deviceId: 1 }, { unique : true });        
-
-        observer.next('All indexes created');
-        observer.complete();
-        });        
+            observer.next('All indexes created');
+            observer.complete();
+        });
     }
 
 }
 
-module.exports = () => {
-    if (!instance) {
-        instance = new MongoDB(
-            {
-                url: process.env.MONGODB_URL,
-                dbName: process.env.MONGODB_DB_NAME,
-            }
-        );
-        console.log(`MongoDB instance created: ${process.env.MONGODB_DB_NAME}`);
+module.exports = {
+    MongoDB,
+    singleton() {
+        if (!instance) {
+            instance = new MongoDB(
+                {
+                    url: process.env.MONGODB_URL,
+                    dbName: process.env.MONGODB_DB_NAME,
+                }
+            );
+            console.log(`MongoDB instance created: ${process.env.MONGODB_DB_NAME}`);
+        }
+        return instance;
     }
-    return instance;
 };

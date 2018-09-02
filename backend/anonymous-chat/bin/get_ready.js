@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').load();
 }
 
-const mongoDB = require('./data/MongoDB')();
+const mongoDB = require('./data/MongoDB').singleton();
 const Rx = require('rxjs');
 
 const start = () => { 
@@ -18,11 +18,11 @@ const start = () => {
     ).subscribe(
         (evt) => console.log(evt),
         (error) => {
-            console.error('Failed to prepare',error);
+            console.error('Failed to get-ready',error);
             process.exit(1);
         },
         () => {
-            console.log('dasboard-devices prepared');
+            console.log('anonymous-chat get-ready');
             process.exit(0);
         }
     );

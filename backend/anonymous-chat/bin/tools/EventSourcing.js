@@ -14,7 +14,7 @@ class EventSourcing {
             {
                 type: process.env.EVENT_STORE_BROKER_TYPE,
                 eventsTopic: process.env.EVENT_STORE_BROKER_EVENTS_TOPIC,
-                eventsTopicSubscription: `${process.env.EVENT_STORE_BROKER_EVENTS_TOPIC}_dashboard-devices`,
+                eventsTopicSubscription: `${process.env.EVENT_STORE_BROKER_EVENTS_TOPIC}_anonymous-chat`,
                 brokerUrl: process.env.EVENT_STORE_BROKER_URL,
                 projectId: process.env.EVENT_STORE_BROKER_PROJECT_ID,
             },
@@ -32,7 +32,7 @@ class EventSourcing {
 module.exports = () => {
     if (!instance) {
         instance = new EventSourcing();
-        console.log('EventSourcing Singleton created');
+        console.log(`${instance.constructor.name} Singleton created`);
     }
     return instance;
 };

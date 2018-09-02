@@ -4,7 +4,8 @@ import * as Rx from 'rxjs';
 import { GatewayService } from '../api/gateway.service';
 import {
   getAllMessages,
-  sendMessage
+  sendMessage,
+  onMessageArriveSubscription
 } from './gql/anonymousChat';
 
 @Injectable()
@@ -33,6 +34,13 @@ export class GeneralChatService {
         msg: message
       },
       errorPolicy: 'all'
+    });
+  }
+
+  listenMessageArrive$(){
+    return this.gateway.apollo
+    .subscribe({
+      query: onMessageArriveSubscription
     });
   }
 

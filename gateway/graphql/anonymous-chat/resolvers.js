@@ -23,13 +23,14 @@ module.exports = {
 
   Query: {
     getMessages(root, args, context) {
-        // return broker.forwardAndGetReply$(
-        //     "Device",
-        //     "gateway.graphql.query.getTags",
-        //     { root, args, jwt: context.encodedToken },
-        //     2000
-        // )
-        return Rx.Observable.of( { result: { code: 200 }, data: ['mensaje_1', 'mensajae 2'] } )
+      console.log(root, args);
+      return broker.forwardAndGetReply$(
+          "ChatMessage",
+          "gateway.graphql.query.getMessages",
+          { root, args, jwt: context.encodedToken },
+          2000
+      )
+      // return Rx.Observable.of({ result: { code: 200 }, data: ['mensaje_1', 'mensajae 2'] })
         .mergeMap(response => getResponseFromBackEnd$(response))
         .toPromise();
     }
@@ -38,27 +39,42 @@ module.exports = {
   //// MUTATIONS ///////
   Mutation: {
     sendMessage(root, args, context) {
-      // return context.broker.forwardAndGetReply$(
-      //   "Device",
-      //   "gateway.graphql.mutation.persistBasicInfoTag",
-      //   { root, args, jwt: context.encodedToken },
-      //   2000
-      // )
-      return Rx.Observable.of({ result: { code: 200 }, data: 'texto de confirmacion' })
+      return context.broker.forwardAndGetReply$(
+        "ChatMessage",
+        "gateway.graphql.mutation.sendMessage",
+        { root, args, jwt: context.encodedToken },
+        2000
+      )
+      // return Rx.Observable.of({ result: { code: 200 }, data: 'texto de confirmacion' })
         // .catch(err => handleError$(err, "persistBasicInfoTag"))
         .mergeMap(response => getResponseFromBackEnd$(response))
         .toPromise();
     }
   },
-  //// SUBSCRIPTIONS ///////
-  
-  // Subscription: {
-
-  // }
+  // SUBSCRIPTIONS ///////
+  Subscription: {
+    onNewMsgArrived: {
+      subscribe: withFilter(
+        (payload, variables, context, info) => {
+          return pubsub.asyncIterator("onNewMsgArrived");
+        },
+        (payload, variables, context, info) => {
+          return true;
+        }
+      )
+    }
+  }
 };
 
 //// SUBSCRIPTIONS SOURCES ////
 const eventDescriptors = [
+  {
+    backendEventName: 'onNewMsgArrived',
+    gqlSubscriptionName: 'onNewMsgArrived',
+    //dataExtractor: (evt) => evt.data,// OPTIONAL, only use if needed
+    //onError: (error, descriptor) => console.log(`Error processing ${descriptor.backendEventName}`),// OPTIONAL, only use if needed
+    //onEvent: (evt, descriptor) => console.log(`Event of type  ${descriptor.backendEventName} arraived: ${JSON.stringify(evt)}`),// OPTIONAL, only use if needed
+  },
 
 ];
 

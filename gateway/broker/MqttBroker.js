@@ -51,7 +51,7 @@ class MqttBroker {
      */
     forwardAndGetReply$(topic, type, payload, timeout = this.replyTimeout, ignoreSelfEvents = true, ops) {
         return this.forward$(topic, type, payload, ops)
-            .switchMap((messageId) => this.getMessageReply$(messageId, timeout, ignoreSelfEvents))
+            .switchMap((messageId) =>  this.getMessageReply$(messageId, timeout, ignoreSelfEvents) )
     }
 
 

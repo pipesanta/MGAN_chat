@@ -1,6 +1,6 @@
 "use strict";
 
-const dashBoardDevices = require("../../domain/DashBoardDevices")();
+const anonymousChat = require("../../domain/AnonymousChat")();
 const broker = require("../../tools/broker/BrokerFactory")();
 const Rx = require("rxjs");
 const jsonwebtoken = require("jsonwebtoken");
@@ -9,41 +9,18 @@ const jwtPublicKey = process.env.JWT_PUBLIC_KEY.replace(/\\n/g, "\n");
 let instance;
 
 class GraphQlService {
+
+
   constructor() {
     this.functionMap = this.generateFunctionMap();
     this.subscriptions = [];
   }
 
-  generateFunctionMap() {
-    return {
-      "gateway.graphql.query.getDashBoardDevicesAlarmReport": {
-        fn: dashBoardDevices.getDashBoardDevicesAlarmReport$,
-        obj: dashBoardDevices
-      },
-      "gateway.graphql.query.getDashBoardDevicesCurrentNetworkStatus": {
-        fn: dashBoardDevices.getDashBoardDevicesCurrentNetworkStatus$,
-        obj: dashBoardDevices
-      },
-      "gateway.graphql.query.getDeviceTransactionsGroupByTimeInterval": {
-        fn: dashBoardDevices.getDeviceTransactionsGroupByTimeInterval$,
-        obj: dashBoardDevices
-      },
-      "gateway.graphql.query.getCuencaNamesWithSuccessTransactionsOnInterval": {
-        fn: dashBoardDevices.getCuencaNamesWithSuccessTransactionsOnInterval$,
-        obj: dashBoardDevices
-      },
-      "gateway.graphql.query.getDeviceTransactionsGroupByGroupName": {
-        fn: dashBoardDevices.getDeviceTransactionsGroupByGroupName$,
-        obj: dashBoardDevices
-      },
-      "gateway.graphql.query.getDeviceDashBoardTotalAccount": {
-        fn: dashBoardDevices.getDeviceDashBoardTotalAccount$,
-        obj: dashBoardDevices
-      }
-    };
-  }
-
+  /**
+   * Starts GraphQL actions listener
+   */
   start$() {
+    //default on error handler
     const onErrorHandler = error => {
       console.error("Error handling  GraphQl incoming event", error);
       process.exit(1);
@@ -53,52 +30,16 @@ class GraphQlService {
     const onCompleteHandler = () => {
       () => console.log("GraphQlService incoming event subscription completed");
     };
-    console.log("GraphQl Service starting ...");
 
-    return Rx.Observable.from([
-      {
-        aggregateType: "Device",
-        messageType: "gateway.graphql.query.getDashBoardDevicesAlarmReport",
-        onErrorHandler,
-        onCompleteHandler
-      },
-      {
-        aggregateType: "Device",
-        messageType:
-          "gateway.graphql.query.getDashBoardDevicesCurrentNetworkStatus",
-        onErrorHandler,
-        onCompleteHandler
-      },
-      {
-        aggregateType: "Device",
-        messageType:
-          "gateway.graphql.query.getDeviceTransactionsGroupByTimeInterval",
-        onErrorHandler,
-        onCompleteHandler
-      },
-      {
-        aggregateType: "Device",
-        messageType:
-          "gateway.graphql.query.getCuencaNamesWithSuccessTransactionsOnInterval",
-        onErrorHandler,
-        onCompleteHandler
-      },
-      {
-        aggregateType: "Device",
-        messageType:
-          "gateway.graphql.query.getDeviceTransactionsGroupByGroupName",
-        onErrorHandler,
-        onCompleteHandler
-      },
-      {
-        aggregateType: "Device",
-        messageType: "gateway.graphql.query.getDeviceDashBoardTotalAccount",
-        onErrorHandler,
-        onCompleteHandler
-      }
-    ]).map(params => this.subscribeEventHandler(params));
+    return Rx.Observable.from(this.getSubscriptionDescriptors())
+    .map(aggregateEvent => {return { ...aggregateEvent, onErrorHandler, onCompleteHandler }})
+      .map(params => this.subscribeEventHandler(params));
   }
 
+  /**
+   * build a Broker listener to handle GraphQL requests procesor
+   * @param {*} descriptor 
+   */
   subscribeEventHandler({
     aggregateType,
     messageType,
@@ -108,18 +49,17 @@ class GraphQlService {
     const handler = this.functionMap[messageType];
     const subscription = broker
       .getMessageListener$([aggregateType], [messageType])
-      //decode and verify the jwt token
       .map(message => {
         return {
-          authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey),
+          authToken: '',
           message
-        };
-      })
+        }
+      }
+      )
       //ROUTE MESSAGE TO RESOLVER
       .mergeMap(({ authToken, message }) =>
         handler.fn
           .call(handler.obj, message.data, authToken)
-          // .do(r => console.log("############################", r))
           .map(response => {
             return {
               response,
@@ -129,21 +69,13 @@ class GraphQlService {
           })
       )
       //send response back if neccesary
-      .mergeMap(({ response, correlationId, replyTo }) => {
-        if (replyTo) {
-          return broker.send$(
-            replyTo,
-            "gateway.graphql.Query.response",
-            response,
-            { correlationId }
-          );
-        } else {
-          return Rx.Observable.of(undefined);
-        }
+      .mergeMap(msg => this.sendResponseBack$(msg))
+      .catch(error => {
+        return Rx.Observable.of(null)
       })
       .subscribe(
         msg => {
-          // console.log(`GraphQlService: ${messageType} process: ${msg}`);
+        // console.log(`GraphQlService: ${messageType} process: ${msg}`);
         },
         onErrorHandler,
         onCompleteHandler
@@ -161,18 +93,74 @@ class GraphQlService {
     };
   }
 
+  // send response back if neccesary
+  sendResponseBack$(msg) {
+    return Rx.Observable.of(msg)
+      .mergeMap(({ response, correlationId, replyTo }) => {
+        if (replyTo) {
+          return broker.send$(
+            replyTo,
+            "gateway.graphql.Query.response",
+            response,
+            { correlationId }
+          );
+        } else {
+          return Rx.Observable.of(undefined);
+        }
+      })
+  }
+
   stop$() {
     Rx.Observable.from(this.subscriptions).map(subscription => {
       subscription.subscription.unsubscribe();
       return `Unsubscribed: aggregateType=${aggregateType}, eventType=${eventType}, handlerName=${handlerName}`;
     });
   }
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////// CONFIG SECTION, ASSOC EVENTS AND PROCESSORS BELOW  /////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+
+
+  /**
+   * returns an array of broker subscriptions for listening to GraphQL requests
+   */
+  getSubscriptionDescriptors() {   
+    return [
+      {
+        aggregateType: "ChatMessage",
+        messageType: "gateway.graphql.query.getMessages"
+      },
+      {
+        aggregateType: "ChatMessage",
+        messageType: "gateway.graphql.mutation.sendMessage"
+      }
+    ];
+  }
+
+  /**
+   * returns a map that assocs GraphQL request with its processor
+   */
+  generateFunctionMap() {    
+    return {
+      "gateway.graphql.query.getMessages": {
+        fn: anonymousChat.getMessages$,
+        obj: anonymousChat
+      },
+      "gateway.graphql.mutation.sendMessage": {
+        fn: anonymousChat.sendMessage$,
+        obj: anonymousChat
+      }
+    };
+  }
+
 }
+
 
 module.exports = () => {
   if (!instance) {
     instance = new GraphQlService();
-    console.log("NEW instance GraphQlService  !!");
+    console.log(`${instance.constructor.name} Singleton created`);
   }
   return instance;
 };

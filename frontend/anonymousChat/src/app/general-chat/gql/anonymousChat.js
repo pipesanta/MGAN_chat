@@ -12,3 +12,8 @@ mutation sendMessage($msg: String!) {
 }
 `;
 
+export const onMessageArriveSubscription = gql `
+subscription{
+  onNewMsgArrived
+}`;
+

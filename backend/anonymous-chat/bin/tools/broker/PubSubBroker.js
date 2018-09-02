@@ -99,7 +99,7 @@ class PubSubBroker {
             Rx.Observable.from(topics)
                 .filter(topicName => Object.keys(this.listeningTopics).indexOf(topicName) === -1)
                 .mergeMap(topicName => {
-                    const subscriptionName = `${topicName}_dashboard_devices`;
+                    const subscriptionName = `${topicName}_anonymous-chat`;
 
                     return this.getSubscription$(topicName, subscriptionName)
                         .map(subsription => { 
@@ -126,7 +126,7 @@ class PubSubBroker {
                         observer.next(topicName);
                     },
                     (err) => {
-                        console.error('Failed to obtain GatewayReplies subscription', err);
+                        console.error('Failed to obtain gateway Replies subscription', err);
                         observer.error(err);
                     },
                     () => {

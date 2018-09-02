@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').load();
 }
 
-const mongoDB = require('./data/MongoDB')();
+const mongoDB = require('./data/MongoDB').singleton();
 const eventSourcing = require('./tools/EventSourcing')();
 const eventStoreService = require('./services/event-store/EventStoreService')();
 const Rx = require('rxjs');
@@ -23,13 +23,13 @@ const start = () => {
         eventStoreService.stop$(),
         mongoDB.stop$(),
     ).subscribe(
-        (evt) => console.log(`dashboard-devices (syncing): ${(evt instanceof Object) ? JSON.stringify(evt) : evt}`),
+        (evt) => console.log(`anonymous-chat (syncing): ${(evt instanceof Object) ? JSON.stringify(evt) : evt}`),
         (error) => {
             console.error('Failed to sync state', error);
             process.exit(1);
         },
         () => {
-            console.log('dashboard-devices state synced');
+            console.log('anonymous-chat state synced');
             process.exit(0);
         }
     );

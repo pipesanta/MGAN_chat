@@ -1,36 +1,36 @@
 {
-  "name": "@nebulae-tpm/mbe-dashboard-devices",
+  "name": "@nebulae-project_context/mbe-backendname",
   "version": "0.0.1",
-  "description": "BackEnd for the dashboard-device Microservice",
+  "description": "BackEnd for the anonymous_chat Microservice",
   "main": "server.js",
   "bin": {
-    "mbe-dashboard-devices": "bin/server.js"
+    "mbe-backendname": "bin/server.js"
   },
   "scripts": {
     "start": "node bin/server.js",
+    "sync-state": "node bin/sync_state.js",
+    "get-ready": "node bin/get_ready.js",
     "test": "./node_modules/.bin/mocha --recursive --reporter spec"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nebulae-tpm/ms-dashboard-devices.git"
+    "url": ""
   },
   "keywords": [
-    "backend",
-    "dashboard",
-    "devices"
+    "backend"
   ],
-  "author": "sebastian.molano@nebulae.com.co",
-  "license": "MIT",
+  "author": "juansantag95@gmail.com",
+  "license": "apache-2.0",
   "bugs": {
-    "url": "https://github.com/nebulae-tpm/ms-dashboard-devices/issues"
+    "url": " "
   },
-  "homepage": "https://github.com/nebulae-tpm/ms-dashboard-devices#readme",
+  "homepage": " ",
   "devDependencies": {
     "chai": "^4.1.2",
     "mocha": "^5.0.5"
   },
   "dependencies": {
-    "@nebulae/event-store": "^0.3.3",
+    "@nebulae/event-store": "^0.3.4",
     "async-mqtt": "^1.0.1",
     "dotenv": "^5.0.1",
     "jsonwebtoken": "^8.2.1",
